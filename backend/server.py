@@ -360,6 +360,12 @@ async def get_study_materials(document_id: str):
 async def get_chat_history(document_id: str):
     """Get chat history for a specific document"""
     chat_messages = await db.chat_messages.find({"document_id": document_id}).to_list(1000)
+    
+    # Remove MongoDB ObjectId from each message to make them JSON serializable
+    for message in chat_messages:
+        if '_id' in message:
+            del message['_id']
+    
     return chat_messages
 
 # Include the router in the main app
