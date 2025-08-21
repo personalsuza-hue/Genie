@@ -258,15 +258,30 @@ async def root():
 @api_router.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
     """Upload and process a PDF document"""
+    logger.info(f"Received upload request - filename: {file.filename}, content_type: {file.content_type}")
+    
+    if not file.filename:
+        logger.error("No filename provided")
+        raise HTTPException(status_code=400, detail="No file uploaded")
+    
     if not file.filename.endswith('.pdf'):
+        logger.error(f"Invalid file type: {file.filename}")
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
     
     try:
         # Read and extract text from PDF
         content = await file.read()
+        logger.info(f"File read successfully, size: {len(content)} bytes")
+        
+        if not content:
+            logger.error("Empty file content")
+            raise HTTPException(status_code=400, detail="Empty file")
+        
         text_content = extract_text_from_pdf(content)
+        logger.info(f"Text extracted, length: {len(text_content)} characters")
         
         if not text_content.strip():
+            logger.error("No text found in PDF")
             raise HTTPException(status_code=400, detail="No text found in PDF")
         
         # Save document to database
@@ -277,10 +292,16 @@ async def upload_document(file: UploadFile = File(...)):
         
         document_dict = prepare_for_mongo(document.dict())
         await db.documents.insert_one(document_dict)
+        logger.info(f"Document saved with ID: {document.id}")
         
         # Generate study materials
+        logger.info("Starting MCQ generation...")
         mcqs = await generate_mcqs(text_content)
+        logger.info(f"Generated {len(mcqs)} MCQs")
+        
+        logger.info("Starting flashcard generation...")
         flashcards = await generate_flashcards(text_content)
+        logger.info(f"Generated {len(flashcards)} flashcards")
         
         # Save study materials
         study_material = StudyMaterial(
@@ -291,6 +312,7 @@ async def upload_document(file: UploadFile = File(...)):
         
         study_material_dict = prepare_for_mongo(study_material.dict())
         await db.study_materials.insert_one(study_material_dict)
+        logger.info("Study materials saved to database")
         
         return {
             "document_id": document.id,
@@ -304,7 +326,7 @@ async def upload_document(file: UploadFile = File(...)):
     except HTTPException:
         raise
     except Exception as e:
-        logging.error(f"Error processing document: {str(e)}")
+        logger.error(f"Error processing document: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error processing document: {str(e)}")
 
 @api_router.post("/chat", response_model=ChatResponse)
