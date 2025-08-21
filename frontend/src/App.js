@@ -30,7 +30,22 @@ function App() {
   const [score, setScore] = useState(0);
 
   const handleFileUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      alert("Please select a PDF file first.");
+      return;
+    }
+
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      alert("Please select a PDF file only.");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size too large. Please select a PDF smaller than 10MB.");
+      return;
+    }
 
     setIsUploading(true);
     const formData = new FormData();
@@ -41,15 +56,35 @@ function App() {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        timeout: 60000, // 60 second timeout for large files
       });
 
-      setDocument(response.data);
-      setMcqs(response.data.mcqs || []);
-      setFlashcards(response.data.flashcards || []);
-      setChatMessages([]);
+      if (response.data && response.data.document_id) {
+        setDocument(response.data);
+        setMcqs(response.data.mcqs || []);
+        setFlashcards(response.data.flashcards || []);
+        setChatMessages([]);
+      } else {
+        throw new Error("Invalid response from server");
+      }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Error uploading file. Please try again.");
+      let errorMessage = "Error uploading file. Please try again.";
+      
+      if (error.response) {
+        // Server responded with error status
+        if (error.response.status === 400) {
+          errorMessage = error.response.data?.detail || "Invalid PDF file. Please check your file and try again.";
+        } else if (error.response.status === 413) {
+          errorMessage = "File too large. Please select a smaller PDF file.";
+        } else if (error.response.status >= 500) {
+          errorMessage = "Server error. Please try again in a moment.";
+        }
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = "Upload timeout. Please try with a smaller file.";
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsUploading(false);
     }
