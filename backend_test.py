@@ -4,6 +4,7 @@ import json
 import io
 from datetime import datetime
 import time
+import re
 
 class StudyGenieAPITester:
     def __init__(self, base_url="https://code-fixer-32.preview.emergentagent.com"):
