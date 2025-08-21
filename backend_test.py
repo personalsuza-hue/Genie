@@ -61,38 +61,93 @@ class StudyGenieAPITester:
         return self.run_test("Root API Endpoint", "GET", "", 200)
 
     def create_sample_pdf(self):
-        """Create a simple PDF-like content for testing"""
-        # Create a simple text file that we'll pretend is a PDF
-        sample_content = """
-        Sample Study Document
-        
-        Chapter 1: Introduction to Machine Learning
-        Machine learning is a subset of artificial intelligence that focuses on algorithms 
-        that can learn from data. There are three main types of machine learning:
-        
-        1. Supervised Learning: Uses labeled data to train models
-        2. Unsupervised Learning: Finds patterns in unlabeled data  
-        3. Reinforcement Learning: Learns through interaction with environment
-        
-        Key Concepts:
-        - Training Data: The dataset used to train the model
-        - Features: Input variables used to make predictions
-        - Labels: The target variable we want to predict
-        - Overfitting: When a model performs well on training data but poorly on new data
-        
-        Chapter 2: Neural Networks
-        Neural networks are computing systems inspired by biological neural networks.
-        They consist of layers of interconnected nodes (neurons) that process information.
-        
-        Types of Neural Networks:
-        - Feedforward Networks: Information flows in one direction
-        - Recurrent Networks: Have feedback connections
-        - Convolutional Networks: Specialized for processing grid-like data
-        """
-        
-        # For testing purposes, we'll create a simple text file
-        # In a real scenario, this would be a proper PDF
-        return sample_content.encode('utf-8')
+        """Create a proper PDF for testing"""
+        try:
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            import io
+            
+            # Create PDF in memory
+            buffer = io.BytesIO()
+            p = canvas.Canvas(buffer, pagesize=letter)
+            
+            # Add content to PDF
+            p.drawString(100, 750, "Sample Study Document")
+            p.drawString(100, 720, "Chapter 1: Introduction to Machine Learning")
+            p.drawString(100, 690, "Machine learning is a subset of artificial intelligence that focuses on algorithms")
+            p.drawString(100, 660, "that can learn from data. There are three main types of machine learning:")
+            p.drawString(100, 630, "1. Supervised Learning: Uses labeled data to train models")
+            p.drawString(100, 600, "2. Unsupervised Learning: Finds patterns in unlabeled data")
+            p.drawString(100, 570, "3. Reinforcement Learning: Learns through interaction with environment")
+            p.drawString(100, 540, "Key Concepts:")
+            p.drawString(100, 510, "- Training Data: The dataset used to train the model")
+            p.drawString(100, 480, "- Features: Input variables used to make predictions")
+            p.drawString(100, 450, "- Labels: The target variable we want to predict")
+            p.drawString(100, 420, "- Overfitting: When a model performs well on training data but poorly on new data")
+            
+            p.showPage()
+            p.save()
+            
+            buffer.seek(0)
+            return buffer.getvalue()
+            
+        except ImportError:
+            # Fallback: create a minimal PDF manually
+            # This is a very basic PDF structure
+            pdf_content = """%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(Sample Study Document) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000206 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+299
+%%EOF"""
+            return pdf_content.encode('utf-8')
 
     def test_upload_document(self):
         """Test document upload endpoint"""
