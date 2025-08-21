@@ -208,23 +208,36 @@ async def generate_flashcards(content: str, num_cards: int = 15) -> List[Flashca
         
         # Parse the JSON response
         try:
+            # Try to parse as direct JSON first
             cards_data = json.loads(response)
-            flashcards = []
-            for card_data in cards_data:
-                flashcard = Flashcard(
-                    front=card_data['front'],
-                    back=card_data['back']
-                )
-                flashcards.append(flashcard)
-            return flashcards
         except json.JSONDecodeError:
-            # Fallback: create sample flashcards
-            return [
-                Flashcard(
-                    front="Key concept from the document",
-                    back="Definition or explanation based on the content"
-                )
-            ]
+            # If direct parsing fails, try to extract JSON from markdown code blocks
+            import re
+            json_match = re.search(r'```(?:json)?\s*(\[.*?\])\s*```', response, re.DOTALL)
+            if json_match:
+                try:
+                    cards_data = json.loads(json_match.group(1))
+                except json.JSONDecodeError:
+                    raise ValueError("Could not parse AI response as JSON")
+            else:
+                # Try to find JSON array in the response
+                json_match = re.search(r'(\[.*?\])', response, re.DOTALL)
+                if json_match:
+                    try:
+                        cards_data = json.loads(json_match.group(1))
+                    except json.JSONDecodeError:
+                        raise ValueError("Could not parse AI response as JSON")
+                else:
+                    raise ValueError("No JSON array found in AI response")
+        
+        flashcards = []
+        for card_data in cards_data:
+            flashcard = Flashcard(
+                front=card_data['front'],
+                back=card_data['back']
+            )
+            flashcards.append(flashcard)
+        return flashcards
     except Exception as e:
         logging.error(f"Error generating flashcards: {str(e)}")
         # Return fallback flashcards
