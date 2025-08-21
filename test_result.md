@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Make my code to run Properly"
+user_problem_statement: "I want to run this project using VS Code so modify the code based on that itself"
 
 backend:
   - task: "StudyGenie Backend API"
