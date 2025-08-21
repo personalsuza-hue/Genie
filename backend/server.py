@@ -350,6 +350,10 @@ async def get_study_materials(document_id: str):
     if not study_material:
         raise HTTPException(status_code=404, detail="Study materials not found")
     
+    # Remove MongoDB ObjectId to make it JSON serializable
+    if '_id' in study_material:
+        del study_material['_id']
+    
     return study_material
 
 @api_router.get("/chat-history/{document_id}")
