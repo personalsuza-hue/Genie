@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 import PyPDF2
 import io
 import json
+import re
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 ROOT_DIR = Path(__file__).parent
