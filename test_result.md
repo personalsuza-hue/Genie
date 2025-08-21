@@ -147,6 +147,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Content-specific AI generation testing"
     - "Backend API endpoints testing"
     - "Frontend PDF upload functionality"
     - "AI-generated MCQs and flashcards"
