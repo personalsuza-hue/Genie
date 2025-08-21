@@ -15,6 +15,7 @@ const API = `${BACKEND_URL}/api`;
 function App() {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [document, setDocument] = useState(null);
   const [mcqs, setMcqs] = useState([]);
   const [flashcards, setFlashcards] = useState([]);
