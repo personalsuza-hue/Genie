@@ -593,6 +593,7 @@ def main():
     # Run tests in sequence
     tests = [
         ("Root Endpoint", tester.test_root_endpoint),
+        ("Content-Specific AI Generation", tester.test_content_specific_generation),
         ("Upload Document", tester.test_upload_document),
         ("Get Documents", tester.test_get_documents),
         ("Get Study Materials", tester.test_get_study_materials),
