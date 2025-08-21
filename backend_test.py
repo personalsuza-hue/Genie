@@ -61,41 +61,9 @@ class StudyGenieAPITester:
         """Test the root API endpoint"""
         return self.run_test("Root API Endpoint", "GET", "", 200)
 
-    def create_sample_pdf(self):
-        """Create a proper PDF for testing"""
-        try:
-            from reportlab.pdfgen import canvas
-            from reportlab.lib.pagesizes import letter
-            import io
-            
-            # Create PDF in memory
-            buffer = io.BytesIO()
-            p = canvas.Canvas(buffer, pagesize=letter)
-            
-            # Add content to PDF
-            p.drawString(100, 750, "Sample Study Document")
-            p.drawString(100, 720, "Chapter 1: Introduction to Machine Learning")
-            p.drawString(100, 690, "Machine learning is a subset of artificial intelligence that focuses on algorithms")
-            p.drawString(100, 660, "that can learn from data. There are three main types of machine learning:")
-            p.drawString(100, 630, "1. Supervised Learning: Uses labeled data to train models")
-            p.drawString(100, 600, "2. Unsupervised Learning: Finds patterns in unlabeled data")
-            p.drawString(100, 570, "3. Reinforcement Learning: Learns through interaction with environment")
-            p.drawString(100, 540, "Key Concepts:")
-            p.drawString(100, 510, "- Training Data: The dataset used to train the model")
-            p.drawString(100, 480, "- Features: Input variables used to make predictions")
-            p.drawString(100, 450, "- Labels: The target variable we want to predict")
-            p.drawString(100, 420, "- Overfitting: When a model performs well on training data but poorly on new data")
-            
-            p.showPage()
-            p.save()
-            
-            buffer.seek(0)
-            return buffer.getvalue()
-            
-        except ImportError:
-            # Fallback: create a minimal PDF manually
-            # This is a very basic PDF structure
-            pdf_content = """%PDF-1.4
+    def create_ml_content_pdf(self):
+        """Create a PDF with specific machine learning content for testing content-specific generation"""
+        pdf_content = b"""%PDF-1.4
 1 0 obj
 <<
 /Type /Catalog
@@ -117,18 +85,71 @@ endobj
 /Parent 2 0 R
 /MediaBox [0 0 612 792]
 /Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+>>
+>>
 >>
 endobj
 
 4 0 obj
 <<
-/Length 44
+/Length 1200
 >>
 stream
 BT
 /F1 12 Tf
-100 700 Td
-(Sample Study Document) Tj
+100 750 Td
+(Machine Learning Fundamentals) Tj
+0 -30 Td
+(Supervised Learning) Tj
+0 -20 Td
+(Supervised learning uses labeled training data to learn a mapping) Tj
+0 -15 Td
+(from input features to target outputs. Common algorithms include:) Tj
+0 -15 Td
+(- Linear Regression: predicts continuous values) Tj
+0 -15 Td
+(- Logistic Regression: binary classification) Tj
+0 -15 Td
+(- Decision Trees: hierarchical decision making) Tj
+0 -15 Td
+(- Random Forest: ensemble of decision trees) Tj
+0 -15 Td
+(- Support Vector Machines: finds optimal decision boundary) Tj
+0 -30 Td
+(Unsupervised Learning) Tj
+0 -20 Td
+(Unsupervised learning finds patterns in data without labels:) Tj
+0 -15 Td
+(- K-Means Clustering: groups similar data points) Tj
+0 -15 Td
+(- Hierarchical Clustering: creates tree of clusters) Tj
+0 -15 Td
+(- Principal Component Analysis: dimensionality reduction) Tj
+0 -15 Td
+(- DBSCAN: density-based clustering algorithm) Tj
+0 -30 Td
+(Key Concepts) Tj
+0 -20 Td
+(Overfitting: model memorizes training data, poor generalization) Tj
+0 -15 Td
+(Underfitting: model too simple, high bias) Tj
+0 -15 Td
+(Cross-validation: technique to assess model performance) Tj
+0 -15 Td
+(Feature Engineering: creating relevant input variables) Tj
+0 -15 Td
+(Regularization: prevents overfitting by adding penalty terms) Tj
+0 -15 Td
+(Gradient Descent: optimization algorithm for training) Tj
+0 -15 Td
+(Bias-Variance Tradeoff: balance between model complexity) Tj
 ET
 endstream
 endobj
@@ -139,16 +160,246 @@ xref
 0000000009 00000 n 
 0000000058 00000 n 
 0000000115 00000 n 
-0000000206 00000 n 
+0000000356 00000 n 
 trailer
 <<
 /Size 5
 /Root 1 0 R
 >>
 startxref
-299
+1605
 %%EOF"""
-            return pdf_content.encode('utf-8')
+        return pdf_content
+
+    def test_content_specific_generation(self):
+        """Test that AI generates content-specific MCQs and flashcards, not generic ones"""
+        print("\n🎯 Testing Content-Specific AI Generation...")
+        
+        # Upload ML content PDF
+        ml_pdf_content = self.create_ml_content_pdf()
+        files = {
+            'file': ('ml_fundamentals.pdf', io.BytesIO(ml_pdf_content), 'application/pdf')
+        }
+        
+        success, response = self.run_test(
+            "Upload ML Content PDF", 
+            "POST", 
+            "upload", 
+            200,
+            files=files
+        )
+        
+        if not success or 'document_id' not in response:
+            print("❌ Failed to upload ML content PDF")
+            return False
+            
+        self.document_id = response['document_id']
+        mcqs = response.get('mcqs', [])
+        flashcards = response.get('flashcards', [])
+        
+        print(f"   Generated {len(mcqs)} MCQs and {len(flashcards)} flashcards")
+        
+        # Test MCQ content specificity
+        mcq_specific = self.analyze_mcq_specificity(mcqs)
+        flashcard_specific = self.analyze_flashcard_specificity(flashcards)
+        
+        # Test chat context awareness
+        chat_specific = self.test_chat_context_awareness()
+        
+        return mcq_specific and flashcard_specific and chat_specific
+
+    def analyze_mcq_specificity(self, mcqs):
+        """Analyze if MCQs are content-specific rather than generic"""
+        print("\n   🔍 Analyzing MCQ Content Specificity...")
+        
+        if not mcqs:
+            print("   ❌ No MCQs generated")
+            return False
+            
+        # Define ML-specific terms that should appear in content-specific questions
+        ml_terms = [
+            'supervised', 'unsupervised', 'overfitting', 'underfitting', 
+            'regression', 'classification', 'clustering', 'decision tree',
+            'random forest', 'svm', 'support vector', 'k-means', 'pca',
+            'cross-validation', 'gradient descent', 'regularization',
+            'bias', 'variance', 'feature engineering', 'dbscan'
+        ]
+        
+        # Generic fallback indicators
+        generic_indicators = [
+            'topic a', 'topic b', 'topic c', 'topic d',
+            'option a', 'option b', 'option c', 'option d',
+            'sample question', 'main topic', 'key concept',
+            'based on the uploaded content', 'document content analysis'
+        ]
+        
+        specific_count = 0
+        generic_count = 0
+        
+        for i, mcq in enumerate(mcqs):
+            question_text = mcq.get('question', '').lower()
+            options_text = ' '.join(mcq.get('options', [])).lower()
+            explanation_text = mcq.get('explanation', '').lower()
+            full_text = f"{question_text} {options_text} {explanation_text}"
+            
+            print(f"   MCQ {i+1}: {mcq.get('question', 'No question')[:80]}...")
+            
+            # Check for ML-specific terms
+            has_ml_terms = any(term in full_text for term in ml_terms)
+            
+            # Check for generic indicators
+            has_generic = any(indicator in full_text for indicator in generic_indicators)
+            
+            if has_ml_terms and not has_generic:
+                specific_count += 1
+                print(f"      ✅ Content-specific (contains ML terms)")
+            elif has_generic:
+                generic_count += 1
+                print(f"      ❌ Generic fallback detected")
+            else:
+                print(f"      ⚠️  Unclear specificity")
+        
+        specificity_ratio = specific_count / len(mcqs) if mcqs else 0
+        print(f"   📊 MCQ Specificity: {specific_count}/{len(mcqs)} ({specificity_ratio:.1%}) are content-specific")
+        
+        # Require at least 70% of MCQs to be content-specific
+        if specificity_ratio >= 0.7:
+            print("   ✅ MCQs are sufficiently content-specific")
+            return True
+        else:
+            print("   ❌ Too many generic MCQs detected")
+            return False
+
+    def analyze_flashcard_specificity(self, flashcards):
+        """Analyze if flashcards are content-specific rather than generic"""
+        print("\n   🔍 Analyzing Flashcard Content Specificity...")
+        
+        if not flashcards:
+            print("   ❌ No flashcards generated")
+            return False
+            
+        # ML-specific terms for flashcards
+        ml_terms = [
+            'supervised learning', 'unsupervised learning', 'overfitting', 'underfitting',
+            'linear regression', 'logistic regression', 'decision tree', 'random forest',
+            'support vector machine', 'k-means', 'clustering', 'pca', 'principal component',
+            'cross-validation', 'gradient descent', 'regularization', 'bias-variance',
+            'feature engineering', 'dbscan', 'hierarchical clustering'
+        ]
+        
+        # Generic fallback indicators
+        generic_indicators = [
+            'key concept from the document', 'main topic', 'summary of the document',
+            'definition or explanation based on the content', 'concept from document'
+        ]
+        
+        specific_count = 0
+        generic_count = 0
+        
+        for i, card in enumerate(flashcards):
+            front_text = card.get('front', '').lower()
+            back_text = card.get('back', '').lower()
+            full_text = f"{front_text} {back_text}"
+            
+            print(f"   Card {i+1}: {card.get('front', 'No front')[:50]}...")
+            
+            # Check for ML-specific terms
+            has_ml_terms = any(term in full_text for term in ml_terms)
+            
+            # Check for generic indicators
+            has_generic = any(indicator in full_text for indicator in generic_indicators)
+            
+            if has_ml_terms and not has_generic:
+                specific_count += 1
+                print(f"      ✅ Content-specific (contains ML terms)")
+            elif has_generic:
+                generic_count += 1
+                print(f"      ❌ Generic fallback detected")
+            else:
+                print(f"      ⚠️  Unclear specificity")
+        
+        specificity_ratio = specific_count / len(flashcards) if flashcards else 0
+        print(f"   📊 Flashcard Specificity: {specific_count}/{len(flashcards)} ({specificity_ratio:.1%}) are content-specific")
+        
+        # Require at least 70% of flashcards to be content-specific
+        if specificity_ratio >= 0.7:
+            print("   ✅ Flashcards are sufficiently content-specific")
+            return True
+        else:
+            print("   ❌ Too many generic flashcards detected")
+            return False
+
+    def test_chat_context_awareness(self):
+        """Test that chat responses are contextually relevant to the document"""
+        print("\n   🔍 Testing Chat Context Awareness...")
+        
+        if not self.document_id:
+            print("   ❌ No document ID available")
+            return False
+        
+        # Test questions that should have specific answers based on the ML content
+        test_questions = [
+            "What is overfitting?",
+            "Name three supervised learning algorithms mentioned in the document",
+            "What is the difference between supervised and unsupervised learning?",
+            "What clustering algorithms are discussed?"
+        ]
+        
+        context_aware_responses = 0
+        
+        for question in test_questions:
+            chat_data = {
+                "document_id": self.document_id,
+                "message": question
+            }
+            
+            print(f"   Testing: {question}")
+            success, response = self.run_test(
+                f"Chat Context Test", 
+                "POST", 
+                "chat", 
+                200,
+                data=chat_data
+            )
+            
+            if success and 'response' in response:
+                ai_response = response['response'].lower()
+                print(f"      Response: {response['response'][:100]}...")
+                
+                # Check if response contains relevant ML terms
+                relevant_terms = [
+                    'supervised', 'unsupervised', 'overfitting', 'training data',
+                    'regression', 'classification', 'clustering', 'decision tree',
+                    'random forest', 'k-means', 'pca', 'regularization'
+                ]
+                
+                has_relevant_content = any(term in ai_response for term in relevant_terms)
+                
+                # Check for generic non-answers
+                generic_responses = [
+                    "i don't have information", "not mentioned in the document",
+                    "i cannot find", "not available in the provided content"
+                ]
+                
+                is_generic = any(generic in ai_response for generic in generic_responses)
+                
+                if has_relevant_content and not is_generic:
+                    context_aware_responses += 1
+                    print(f"      ✅ Context-aware response")
+                else:
+                    print(f"      ❌ Generic or irrelevant response")
+            
+            time.sleep(1)  # Rate limiting
+        
+        awareness_ratio = context_aware_responses / len(test_questions)
+        print(f"   📊 Chat Context Awareness: {context_aware_responses}/{len(test_questions)} ({awareness_ratio:.1%}) responses were context-aware")
+        
+        if awareness_ratio >= 0.75:
+            print("   ✅ Chat responses are sufficiently context-aware")
+            return True
+        else:
+            print("   ❌ Chat responses lack sufficient context awareness")
+            return False
 
     def test_upload_document(self):
         """Test document upload endpoint"""
