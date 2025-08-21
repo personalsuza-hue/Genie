@@ -1,0 +1,14 @@
+Sample Study Document
+
+Chapter 1: Introduction to Machine Learning
+Machine learning is a subset of artificial intelligence that focuses on algorithms that can learn from data. There are three main types of machine learning:
+
+1. Supervised Learning: Uses labeled data to train models
+2. Unsupervised Learning: Finds patterns in unlabeled data  
+3. Reinforcement Learning: Learns through interaction with environment
+
+Key Concepts:
+- Training Data: The dataset used to train the model
+- Features: Input variables used to make predictions
+- Labels: The target variable we want to predict
+- Overfitting: When a model performs well on training data but poorly on new data
