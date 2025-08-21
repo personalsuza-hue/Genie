@@ -119,6 +119,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "Comprehensive backend API testing completed successfully. All 8 core tests passed: ✅ Root endpoint (200), ✅ PDF upload with text extraction (200), ✅ Document listing (200), ✅ Study materials retrieval (200), ✅ Chat functionality with AI responses (200), ✅ Chat history (200), ✅ Error handling for invalid document IDs (404), ✅ File validation (400 for non-PDF/empty files). AI integration working with emergentintegrations + OpenAI GPT-4o-mini. MongoDB connectivity verified with proper data persistence. All endpoints return correct HTTP status codes and JSON responses. Edge cases handled properly."
+        - working: true
+          agent: "testing"
+          comment: "CONTENT-SPECIFIC AI GENERATION TESTING COMPLETED SUCCESSFULLY: ✅ Enhanced JSON parsing fix working perfectly - no more markdown code block issues. ✅ MCQ Generation: 100% content-specific (10/10 MCQs contained actual ML concepts like supervised/unsupervised learning, overfitting, decision trees, etc. - NO generic fallbacks). ✅ Flashcard Generation: 100% content-specific (18/18 flashcards with real ML terms and definitions - NO generic 'Key concept from document' fallbacks). ✅ Chat Context Awareness: 100% (4/4 responses) contextually relevant with specific ML knowledge from document. ✅ All 13 comprehensive tests passed including content specificity analysis. The bug fix for JSON parsing from markdown code blocks is working perfectly - AI now generates truly content-specific study materials instead of generic fallbacks."
 
 frontend:
   - task: "StudyGenie Frontend UI"
